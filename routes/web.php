@@ -22,6 +22,7 @@ Route::group(['middleware' => ['auth']], function () {
             Route::post('/store', 'TasksController@store')->name('store');
             Route::get('/show/{tasks}', 'TasksController@show')->name('show');
             Route::post('/update/{tasks}', 'TasksController@update')->name('update');
+            Route::get('/getTasks', 'TasksController@getTasks')->name('getTasks');
         });
 });
 

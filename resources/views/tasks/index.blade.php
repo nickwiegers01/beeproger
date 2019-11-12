@@ -23,6 +23,7 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <div id="message"></div>
 
                         <!-- TABLE SECTION -->
                         <table class="table text-center">
@@ -34,40 +35,9 @@
                                     <th>Acties</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                @forelse($tasks as $task)
+                            <tbody id="task_list">
 
-                                    @if($task->status == "0")
-                                        <?php
-                                            $bg_color = "bg-danger";
-                                            $icon = "fa fa-times text-white";
-                                        ?>
-                                    @endif
-                                    @if($task->status == "1")
-                                        <?php
-                                            $bg_color = "bg-success";
-                                            $icon = "fa fa-check text-white";
-                                        ?>
-                                    @endif
-
-                                    <tr>
-                                        <td>{{ $task->title }}</td>
-                                        <td>{{ $task->created_at }}</td>
-                                        <td class="<?php echo $bg_color; ?>"><i class="{{ $icon }}"></i></td>
-                                        <td>
-                                            <div class="btn-group">
-                                                <a href="{{ route('task.show', ['tasks' => $task->id ]) }}" class="btn btn-primary" title="Update Taak"><i class="fa fa-edit"></i></a>
-                                                <a href="{{ route('task.destroy', ['tasks' => $task->id ]) }}" class="btn btn-primary" title="Verwijder Taak"><i class="fa fa-trash"></i></a>
-                                                <a href="{{ route('task.edit', ['tasks' => $task->id ]) }}" class="btn btn-primary" title="Voltooi Taak"><i class="fa fa-check"></i></a>
-                                            </div>
-                                        </td>
-                                    </tr>
-
-                                @empty
-                                    <div class="text-center">
-                                        <p class="text-muted">Geen taken gevonden !</p>
-                                    </div>
-                                @endforelse
+                                <!-- TABEL WORDT GEVULD DOOR JAVASCRIPT -->
 
                             </tbody>
                         </table>
@@ -132,5 +102,47 @@
             </div>
         </div>
     </div>
-    <!-- EINDE MODAL SECTION -->
+
+    <script>
+        window.onload = function () {
+            getTasks();
+        };
+        async function getTasks() {
+            let output = document.querySelector('#task_list');
+
+            await fetch("{{ url('/getTasks') }}")
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach( function (item) {
+                        let id = item.id;
+                        let bg_color = (item.status === 0 ? 'bg-danger' : 'bg-success');
+                        let icon = (item.status === 0 ? 'fa fa-times text-white' : 'fa fa-check text-white' );
+                        let complete = "{{ url('/update') }}/" + id;
+                        let update = "{{ url('/show') }}/" + id;
+
+                        let template = `
+                               <tr>
+                                        <td>${item.title}</td>
+                                        <td>${item.created_at}</td>
+                                        <td class="${bg_color}"><i class="${icon}"></i></td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="${update}" class="btn btn-primary text-white" title="Update Taak"><i class="fa fa-edit"></i></a>
+                                                <button onclick="deleteTask(${item})" class="btn btn-primary text-white" title="Verwijder Taak"><i class="fa fa-trash"></i></button>
+                                                <a href="${complete}" class="btn btn-primary text-white" title="Voltooi Taak"><i class="fa fa-check"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                        `;
+                        output.innerHTML += template;
+                    })
+                })
+        }
+        function deleteTask(item) {
+            if (confirm("Weet u het zeker ?") == true){
+                let url = "{{ url('/destroy') }}/" + item.id;
+                location.href = url;
+            }
+        }
+    </script>
 @endsection

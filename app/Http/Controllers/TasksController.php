@@ -15,9 +15,14 @@ class TasksController extends Controller
      */
     public function index()
     {
+        return view('tasks.index');
+    }
+
+    public function getTasks(){
         $user_id = Auth::user()->id;
         $tasks = Tasks::where('user_ID', $user_id)->get();
-        return view('tasks.index', compact('tasks'));
+
+        return response()->json($tasks, 200);
     }
 
     /**
@@ -94,10 +99,16 @@ class TasksController extends Controller
         $edit = $tasks->update(['status' => "1"]);
 
         if ($edit){
-            return redirect(route('task.index'))->with('success', 'U heeft uw taak succesvol afgerond');
+            $response = [
+                'msg' => 'Succesvol voldaan'
+            ];
         }else{
-            return redirect(route('task.index'))->with('error', 'Er heeft zich een fout voorgedaan');
+            $response = [
+                'msg' => 'Er heeft zich een fout voorgedaan'
+            ];
         }
+
+        return response()->json($response, 200);
     }
 
     /**
